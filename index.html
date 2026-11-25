@@ -94,8 +94,8 @@ function saveP(){
 function render(){
  if(!S.p)return setup();
  const c=calc(S.p),L=today(),eat=L.reduce((a,x)=>a+x.kcal,0),left=c.t-eat,pe=L.reduce((a,x)=>a+(x.p||0),0),over=left<0,R=66,C=2*Math.PI*R;
- const date=new Date().toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long'});
- let h=`<div class="top"><div><h1>วันนี้</h1><div class="mut">${date}</div></div><button class="g" onclick="setup()">ตั้งค่า</button></div>
+ (S.tg||(S.tg={}))[dk()]=c.t;save();const date=new Date().toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long'});
+ let h=`<div class="top"><div><h1>วันนี้</h1><div class="mut">${date}</div></div><span><button class="g" onclick="hist()">ประวัติ</button> <button class="g" onclick="setup()">ตั้งค่า</button></span></div>
  <div class="card hero"><div class="ring"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="${R}" fill="none" stroke="var(--line)" stroke-width="14"/><circle cx="80" cy="80" r="${R}" fill="none" stroke="${over?'var(--over)':'var(--acc)'}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-Math.min(1,eat/c.t))}"/></svg>
  <div class="n"><b style="color:${over?'var(--over)':'inherit'}">${fmt(Math.abs(left))}</b><span class="mut">${over?'kcal เกินเป้า':'kcal เหลือ'}</span></div></div>
  <div><div class="mut">เป้าหมายต่อวัน</div><h2>${fmt(c.t)} kcal</h2><div class="mut">กินแล้ว ${fmt(eat)}</div><div class="mut">โปรตีน ${fmt(pe)} / ${fmt(c.pt)} ก.</div>
@@ -140,14 +140,14 @@ function commit(){const L=today(),b=Date.now();pend.forEach((x,i)=>L.push({id:b+
 async function run(text,blob){
  const msg=$('msg');msg.textContent='Claude กำลังประเมิน...';
  try{
-  const s=typeof claude!=='undefined'&&await claude.use('sample');if(!s)throw new Error('no');
+  const s=await claude.use('sample');if(!s)throw new Error('no');
   if(blob&&!(await s.limits()).images)throw new Error('img');
   const pr='คุณเป็นนักกำหนดอาหารที่ประเมินแคลอรี่อาหารไทยและอาหารทั่วไป ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น รูปแบบ {"items":[{"name":"ชื่ออาหารภาษาไทย","qty":"ปริมาณที่ประเมิน","kcal":ตัวเลข,"p":โปรตีนกรัม,"c":คาร์บกรัม,"f":ไขมันกรัม}]} แยกเป็นหนึ่งรายการต่อเมนูหรือจาน ประเมินตามปริมาณที่ระบุหรือที่เห็น ถ้าไม่ระบุให้ใช้ 1 หน่วยบริโภคทั่วไป '+(text?'อาหาร: '+text:'ดูอาหารจากรูปที่แนบ');
   const r=await s.json(pr,blob?{images:[blob]}:{});
   const it=(r&&r.items)||[];if(!it.length)throw new Error('empty');
   it.forEach(x=>addP(String(x.name||'อาหาร'),String(x.qty||''),+x.kcal||0,+x.p||0,+x.c||0,+x.f||0));
   msg.textContent='ประเมินแล้ว ตรวจและแก้ตัวเลขได้ก่อนเพิ่ม';chk();
- }catch(e){msg.textContent=e.message==='no'?'ฟีเจอร์ประเมินด้วย AI ใช้ได้เฉพาะในหน้า Claude ตอนนี้เลือกจากรายการหรือกรอกแคลเองได้':'ประเมินไม่สำเร็จ ลองใหม่อีกครั้ง หรือเลือกจากเมนูด้านล่าง'}
+ }catch(e){msg.textContent='ประเมินไม่สำเร็จ ลองใหม่อีกครั้ง หรือเลือกจากเมนูด้านล่าง'}
 }
 function ai(){const q=$('q').value.trim();if(!q){$('msg').textContent='พิมพ์ชื่ออาหารก่อน';return}run(q)}
 function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const r=Math.min(1,900/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*r;c.height=i.height*r;c.getContext('2d').drawImage(i,0,0,c.width,c.height);c.toBlob(ok,'image/jpeg',.8)};i.onerror=no;i.src=URL.createObjectURL(f)})}
@@ -204,5 +204,21 @@ function custom(){const n=$('cn').value.trim(),q=$('cq').value.trim(),ks=$('ck')
  if(ks===''||!(k>=0)){run(n+(q?' '+q:''));return}
  const m=S.my||(S.my=[]);if(!m.some(x=>x[0]===n&&x[1]===q))m.push([n,q,Math.round(k),0,'m','m']);save();
  addP(n,q,k,0,0,0);chk();['cn','ck','cq'].forEach(i=>$(i).value='');drawList()}
+let HN=7,HO=null;
+function hist(){
+ const c=calc(S.p),D=[];
+ for(let i=0;i<HN;i++){const d=new Date();d.setDate(d.getDate()-i);const k=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),L=S.logs[k]||[];D.push({k,d,L,kc:L.reduce((a,x)=>a+x.kcal,0),p:L.reduce((a,x)=>a+(x.p||0),0),t:(S.tg||{})[k]||c.t,w:((S.wl||[]).find(x=>x.d===k)||{}).w,wa:(S.wt||{})[k]||0})}
+ const lg=D.filter(x=>x.L.length),n=lg.length,avg=n?lg.reduce((a,x)=>a+x.kc,0)/n:0,ok=lg.filter(x=>x.kc<=x.t).length,ap=n?lg.reduce((a,x)=>a+x.p,0)/n:0,ws=D.filter(x=>x.w).reverse(),mx=Math.max(1,...D.map(x=>Math.max(x.kc,x.t)))*1.1,bw=Math.min(24,280/HN-3),R=[...D].reverse(),dw=ws.length>1?ws[ws.length-1].w-ws[0].w:0;
+ let h=`<div class="top"><h1>ย้อนหลัง</h1><button class="g" onclick="render()">กลับ</button></div><div class="chips">${[7,14,30].map(v=>`<button class="chip${v===HN?' on':''}" onclick="HN=${v};HO=null;hist()">${v} วัน</button>`).join('')}</div>`;
+ h+='<div class="card">'+(n?`<h3>เฉลี่ย ${fmt(avg)} kcal/วัน</h3><div class="mut">บันทึก ${n} วัน · อยู่ในเป้า ${ok} วัน · โปรตีนเฉลี่ย ${fmt(ap)} ก.${ws.length>1?' · น้ำหนัก '+(dw>0?'+':'')+dw.toFixed(1)+' กก.':''}</div>`:'<div class="mut">ยังไม่มีบันทึกในช่วงนี้')+'</div>'
+  +`<svg viewBox="0 0 300 112" style="width:100%;margin-top:8px">${R.map((x,i)=>{const X=10+i*(280/HN),H=x.kc/mx*90,T=100-x.t/mx*90;return`<rect x="${X}" y="${100-H}" width="${bw}" height="${H}" rx="3" fill="${x.kc>x.t?'var(--over)':'var(--acc)'}" opacity="${x.L.length?1:.2}"/><line x1="${X-1}" x2="${X+bw+1}" y1="${T}" y2="${T}" stroke="var(--ink)" stroke-width="1.5"/>${HN<=14?`<text x="${X+bw/2}" y="110" font-size="8" text-anchor="middle" fill="var(--mut)">${x.d.getDate()}</text>`:''}`}).join('')}</svg><div class="mut">แท่ง = แคลที่กิน · เส้นดำ = เป้าของวันนั้น</div></div>`;
+ for(const x of D){
+  h+=`<div class="card"${x.L.length?` onclick="HO=HO==='${x.k}'?null:'${x.k}';hist()" style="cursor:pointer"`:''}><div class="mh"><h3>${x.d.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short'})}</h3><span class="mut">${x.L.length?fmt(x.kc)+' / '+fmt(x.t)+' kcal':'ไม่มีบันทึกอาหาร'}</span></div>`;
+  if(x.L.length)h+=`<div class="bar"><i class="${x.kc>x.t?'o':''}" style="width:${Math.min(100,x.kc/x.t*100)}%"></i></div>`;
+  if(x.L.length||x.wa||x.w)h+=`<div class="mut">${x.L.length?'โปรตีน '+fmt(x.p)+' ก.':''}${x.wa?' · น้ำดื่ม '+fmt(x.wa)+' มล.':''}${x.w?' · น้ำหนัก '+x.w+' กก.':''}</div>`;
+  if(HO===x.k)h+=MEALS.map(m=>{const it=x.L.filter(y=>y.meal===m[0]);return it.length?`<div class="lbl">${m[1]}</div>`+it.map(y=>`<div class="it"><span>${esc(y.name)}</span><span>${fmt(y.kcal)}</span></div>`).join(''):''}).join('');
+  h+='</div>';
+ }
+ $('app').innerHTML=h}
 render();
 </script></body></html>
