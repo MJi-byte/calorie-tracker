@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>นับแคล ลดน้ำหนัก</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#F4F7F3;--card:#fff;--ink:#13251E;--mut:#5E7068;--line:#DCE4DD;--acc:#2A9456;--accb:#E3F3E8;--over:#D94F2B;--ovb:#FBE6DF;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1914;--card:#16251E;--ink:#E8F1EB;--mut:#9DB0A5;--line:#27392F;--acc:#4CC47E;--accb:#1C3A2A;--over:#F27A57;--ovb:#3B241C;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1914;--card:#16251E;--ink:#E8F1EB;--mut:#9DB0A5;--line:#27392F;--acc:#4CC47E;--accb:#1C3A2A;--over:#F27A57;--ovb:#3B241C;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.5 "Noto Sans Thai",system-ui,sans-serif}
+.app{max-width:480px;margin:0 auto;padding:16px 16px 48px}
+h1,h2,h3{margin:0;font-weight:800}h1{font-size:22px}h3{font-size:17px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.mut{color:var(--mut);font-size:14px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;border-radius:12px;padding:10px 16px;background:var(--acc);color:#fff;font-weight:600}
+button.g{background:transparent;color:var(--mut);border:1px solid var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+.hero{display:flex;gap:16px;align-items:center}
+.ring{position:relative;width:150px;height:150px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .n{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.ring b{font-size:34px;font-weight:800}
+.bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden;margin:8px 0 10px}
+.bar i{display:block;height:100%;background:var(--acc)}.bar i.o{background:var(--over)}
+.mh{display:flex;justify-content:space-between;align-items:baseline}
+.it{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
+.it button{padding:0 8px;background:none;color:var(--mut);font-size:18px}
+.add{width:100%;margin-top:8px;background:var(--accb);color:var(--acc)}
+.warn{background:var(--ovb);color:var(--over);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.f{display:block;font-size:14px;color:var(--mut)}label.f input,label.f select{margin-top:4px;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.chip{background:var(--card);color:var(--ink);border:1px solid var(--line);font-weight:400;padding:8px 12px}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:5}
+.sh{background:var(--bg);width:100%;max-width:480px;max-height:88%;overflow:auto;border-radius:22px 22px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.row{display:flex;gap:8px;margin:10px 0}.row button{white-space:nowrap}
+.ph{display:block;text-align:center;border:2px dashed var(--line);border-radius:14px;padding:12px;color:var(--acc);font-weight:600;cursor:pointer}
+.ph:focus-within{outline:3px solid var(--acc)}
+.pi{display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.pi div{flex:1;min-width:0}.pi input{width:84px}
+.lbl{margin:14px 0 6px;font-weight:600}
+.sw{padding:2px 8px;font-size:13px;margin-left:6px;color:var(--acc)}#pop .ov{z-index:9;align-items:center;padding:20px}.pp{background:var(--card);border-radius:18px;padding:18px;max-width:360px;width:100%}.pp button{margin:4px 4px 0 0}
+@media(prefers-reduced-motion:no-preference){.bar i{transition:width .4s}}
+</style></head><body><div class="app" id="app"></div><div id="sheet"></div><div id="pop"></div>
+<script>
+const K='calapp1';
+let S={p:null,logs:{}},M='b',pend=[],pace=0.5;
+try{Object.assign(S,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+const MEALS=[['b','มื้อเช้า',.25],['l','มื้อกลางวัน',.35],['d','มื้อเย็น',.30],['s','ของว่าง',.10]];
+const SRCS=[['c','ร้านสะดวกซื้อ'],['r','ข้าวแกง/ตามสั่ง'],['n','ก๋วยเตี๋ยว/จานเดียว'],['h','ทำเองที่บ้าน']];let SRC='c';
+// [ชื่อ, ปริมาณ, kcal, โปรตีน(ก.), แหล่ง] ค่าโดยประมาณ
+const FOODS=[['ไข่ต้ม','1 ฟอง',75,6,'c'],['อกไก่ปรุงรสพร้อมทาน','1 ซอง',110,22,'c'],['ปลาทูน่าในน้ำแร่','1 กระป๋อง',120,26,'c'],['โยเกิร์ตกรีก','1 ถ้วย',100,10,'c'],['นมจืด','1 กล่อง',130,7,'c'],['นมถั่วเหลืองไม่หวาน','1 กล่อง',100,7,'c'],['สลัดไก่','1 กล่อง',250,18,'c'],['แซนด์วิชไก่','1 ชิ้น',280,13,'c'],['ข้าวกล่องกะเพราไก่','1 กล่อง',480,18,'c'],['ข้าวโพดต้ม','1 ฝัก',120,3,'c'],['กล้วยหอม','1 ผล',90,1,'c'],['ชาไข่มุก','1 แก้ว',400,3,'c'],['น้ำอัดลม','1 กระป๋อง',140,1,'c'],['กาแฟเย็น','1 แก้ว',200,3,'c'],
+['ข้าวสวย','1 ทัพพี',70,1,'r'],['กะเพราหมูไข่ดาว ราดข้าว','1 จาน',580,22,'r'],['ข้าวไข่เจียว','1 จาน',500,15,'r'],['ปลานึ่งมะนาว','1 จาน',200,30,'r'],['ต้มยำกุ้งน้ำใส','1 ถ้วย',120,12,'r'],['แกงจืดเต้าหู้หมูสับ','1 ถ้วย',90,8,'r'],['ผัดผักรวม','1 จาน',120,4,'r'],['ส้มตำไทย','1 จาน',120,3,'r'],['ไก่ย่างน่อง','1 ชิ้น',200,20,'r'],['ข้าวผัดไก่','1 จาน',520,18,'r'],
+['ข้าวมันไก่','1 จาน',585,25,'n'],['ผัดไทยกุ้งสด','1 จาน',540,17,'n'],['ก๋วยเตี๋ยวน้ำใสหมู','1 ชาม',350,18,'n'],['เกาเหลาหมู','1 ชาม',200,18,'n'],['ข้าวต้มปลา','1 ชาม',300,17,'n'],['โจ๊กหมู','1 ชาม',300,12,'n'],
+['อกไก่ต้ม','100 กรัม',130,25,'h'],['ข้าวกล้อง','1 ทัพพี',80,2,'h'],['สลัดอกไก่ ผักเยอะ','1 จาน',250,25,'h'],['ปลาย่าง/นึ่ง','150 กรัม',200,30,'h'],['ข้าวโอ๊ตนมกล้วย','1 ชาม',280,11,'h'],['ไข่เจียวใส่ผัก','1 ฟอง',150,8,'h'],['แกงจืดผัก','1 ถ้วย',60,4,'h'],['ผลไม้หวานน้อย','1 จาน',80,1,'h'],['โยเกิร์ตไม่หวานใส่ผลไม้','1 ถ้วย',130,8,'h']];
+const SW={'ชาไข่มุก':['ชาเขียว/ชามะนาวไม่หวาน','1 แก้ว',50,0],'น้ำอัดลม':['โซดามะนาว ไม่น้ำตาล','1 แก้ว',10,0],'กาแฟเย็น':['อเมริกาโน่เย็น','1 แก้ว',10,0],'ผัดไทยกุ้งสด':['ก๋วยเตี๋ยวน้ำใสหมู','1 ชาม',350,18],'ข้าวมันไก่':['ข้าวมันไก่ ไก่ต้ม ข้าวครึ่ง','1 จาน',400,22],'ข้าวไข่เจียว':['ข้าวสวย + ไข่ต้ม 2 ฟอง','1 จาน',290,13],'ข้าวผัดไก่':['ข้าวสวย 2 ทัพพี + ไก่ย่าง','1 จาน',340,21]};
+const dk=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const today=()=>S.logs[dk()]||(S.logs[dk()]=[]);
+const fmt=n=>Math.round(n).toLocaleString('th-TH');
+function calc(p){const bmr=10*p.w+6.25*p.h-5*p.a+(p.sex==='m'?5:-161),tdee=bmr*p.act,fl=p.sex==='m'?1500:1200;let t=tdee-p.pace*1100;const clamp=t<fl;if(clamp)t=fl;t=Math.round(t/10)*10;const real=Math.max((tdee-t)/1100,.1);return{wt:Math.round(p.w*(p.act<1.3?30:p.act<1.5?33:p.act<1.65?36:40)/50)*50,pt:Math.round(p.w*1.4/5)*5,tdee:Math.round(tdee),t,clamp,weeks:p.w>p.gw?Math.ceil((p.w-p.gw)/real):0,real}}
+
+function setup(){
+ const p=S.p||{sex:'f',a:30,h:160,w:65,gw:55,act:1.375,pace:.5};pace=p.pace;
+ $('app').innerHTML=`<div class="top"><h1>ตั้งเป้าหมายของคุณ</h1></div>
+ <div class="card"><div class="g2">
+ <label class="f">เพศ<select id="sex"><option value="f">หญิง</option><option value="m">ชาย</option></select></label>
+ <label class="f">อายุ (ปี)<input id="a" type="number" inputmode="numeric" value="${p.a}"></label>
+ <label class="f">ส่วนสูง (ซม.)<input id="h" type="number" inputmode="decimal" value="${p.h}"></label>
+ <label class="f">น้ำหนักตอนนี้ (กก.)<input id="w" type="number" inputmode="decimal" value="${p.w}"></label>
+ <label class="f">น้ำหนักเป้าหมาย (กก.)<input id="gw" type="number" inputmode="decimal" value="${p.gw}"></label>
+ <label class="f">การเคลื่อนไหว<select id="act"><option value="1.2">นั่งเป็นหลัก</option><option value="1.375">ออกกำลังเบา 1-3 วัน/สัปดาห์</option><option value="1.55">ออกกำลัง 3-5 วัน/สัปดาห์</option><option value="1.725">ออกกำลังหนัก 6-7 วัน/สัปดาห์</option></select></label>
+ </div>
+ <div class="lbl">อยากลดน้ำหนักเร็วแค่ไหน (กก./สัปดาห์)</div><div class="chips" id="paces"></div>
+ <div class="mut">ช้าลงเหนื่อยน้อยกว่าและรักษาน้ำหนักได้ง่ายกว่า</div></div>
+ <button style="width:100%" onclick="saveP()">${S.p?'บันทึก':'เริ่มใช้งาน'}</button>
+ ${S.p?'<button class="g" style="width:100%;margin-top:8px" onclick="render()">ยกเลิก</button>':''}`;
+ $('sex').value=p.sex;$('act').value=String(p.act);drawPaces();
+}
+function drawPaces(){$('paces').innerHTML=[.25,.5,.75,1].map(v=>`<button class="chip${v===pace?' on':''}" onclick="pace=${v};drawPaces()">${v}</button>`).join('')}
+function saveP(){
+ const g=id=>parseFloat($(id).value),p={sex:$('sex').value,a:g('a'),h:g('h'),w:g('w'),gw:g('gw'),act:g('act'),pace};
+ if([p.a,p.h,p.w,p.gw].some(x=>!(x>0))){alert('กรอกตัวเลขให้ครบทุกช่องก่อนนะ');return}
+ S.p=p;save();render();
+}
+
+function render(){
+ if(!S.p)return setup();
+ const c=calc(S.p),L=today(),eat=L.reduce((a,x)=>a+x.kcal,0),left=c.t-eat,pe=L.reduce((a,x)=>a+(x.p||0),0),over=left<0,R=66,C=2*Math.PI*R;
+ const date=new Date().toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long'});
+ let h=`<div class="top"><div><h1>วันนี้</h1><div class="mut">${date}</div></div><button class="g" onclick="setup()">ตั้งค่า</button></div>
+ <div class="card hero"><div class="ring"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="${R}" fill="none" stroke="var(--line)" stroke-width="14"/><circle cx="80" cy="80" r="${R}" fill="none" stroke="${over?'var(--over)':'var(--acc)'}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-Math.min(1,eat/c.t))}"/></svg>
+ <div class="n"><b style="color:${over?'var(--over)':'inherit'}">${fmt(Math.abs(left))}</b><span class="mut">${over?'kcal เกินเป้า':'kcal เหลือ'}</span></div></div>
+ <div><div class="mut">เป้าหมายต่อวัน</div><h2>${fmt(c.t)} kcal</h2><div class="mut">กินแล้ว ${fmt(eat)}</div><div class="mut">โปรตีน ${fmt(pe)} / ${fmt(c.pt)} ก.</div>
+ <div class="mut" style="margin-top:6px">ลด ${c.real.toFixed(2).replace(/\.?0+$/,'')} กก./สัปดาห์${c.weeks?' · ถึงเป้าใน ~'+c.weeks+' สัปดาห์':''}</div></div></div>`;
+ if(c.clamp)h+=`<div class="warn">เป้าหมายถูกปรับขึ้นเป็น ${fmt(c.t)} kcal เพื่อไม่ให้ต่ำเกินไป จึงลดได้ช้ากว่าที่เลือก</div>`;
+ h+='<div style="height:12px"></div>'+water(c);
+ for(const [k,n,r] of MEALS){
+  const bud=Math.round(c.t*r),items=L.filter(x=>x.meal===k),e=items.reduce((a,x)=>a+x.kcal,0);
+  h+=`<div class="card"><div class="mh"><h3>${n}</h3><span class="mut">${fmt(e)} / ${fmt(bud)} kcal · P ${fmt(items.reduce((a,x)=>a+(x.p||0),0))}/${fmt(c.pt*r)} ก.</span></div>
+  <div class="bar"><i class="${e>bud?'o':''}" style="width:${Math.min(100,e/bud*100)}%"></i></div>
+  ${items.map(x=>`<div class="it"><span>${esc(x.name)}${x.qty?' <span class="mut">'+esc(x.qty)+'</span>':''}${sw(x)}</span><span>${fmt(x.kcal)} <button aria-label="ลบ ${esc(x.name)}" onclick="del(${x.id})">×</button></span></div>`).join('')}
+  <div class="g2"><button class="add" onclick="openAdd('${k}')">+ เพิ่มอาหาร</button><button class="add" onclick="openSug('${k}')">เมนูแนะนำ</button></div></div>`;
+ }
+ h+=wcard(c);h+='<div class="mut">ค่าที่ได้เป็นการประมาณเพื่อช่วยวางแผน ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว (เช่น โรคไตหรือหัวใจที่ต้องจำกัดน้ำ) หรือกำลังตั้งครรภ์ ควรปรึกษาแพทย์หรือนักกำหนดอาหาร</div>';
+ $('app').innerHTML=h;
+}
+function del(id){S.logs[dk()]=today().filter(x=>x.id!==id);save();render()}
+
+function openAdd(k){
+ M=k;pend=[];const n=MEALS.find(m=>m[0]===k)[1];
+ $('sheet').innerHTML=`<div class="ov" onclick="if(event.target===this)closeS()"><div class="sh" role="dialog" aria-label="เพิ่มอาหาร">
+ <div class="mh"><h3>เพิ่มใน${n}</h3><button class="g" onclick="closeS()">ปิด</button></div>
+ <div class="row"><input id="q" placeholder="พิมพ์ชื่ออาหาร เช่น ข้าวมันไก่ 1 จาน" oninput="drawList()"><button onclick="ai()">คำนวณแคล</button></div>
+ <label class="ph">ถ่ายรูปหรือเลือกรูปอาหาร<input type="file" accept="image/*" hidden onchange="photo(this)"></label>
+ <div id="msg" class="mut" style="margin-top:8px"></div><div id="pend"></div>
+ <div class="lbl">เมนูที่พบบ่อย</div><div id="list" class="chips"></div></div></div>`;
+ drawList();
+}
+function closeS(){$('sheet').innerHTML=''}
+function drawList(){
+ const q=$('q').value.trim();
+ const f=FOODS.map((x,i)=>[...x,i]).filter(x=>!q||x[0].includes(q.replace(/[\d\s]+.*$/,'')||q));
+ $('list').innerHTML=f.length?f.map(x=>`<button class="chip" onclick="addF(${x[5]})">${x[0]} · ${x[2]}</button>`).join(''):'<span class="mut">ไม่พบในรายการ กด "คำนวณแคล" ให้ Claude ประเมินได้เลย</span>';
+}
+function addP(name,qty,kcal,p,c,f){pend.push({name,qty,kcal:Math.round(kcal),p,c,f});drawPend()}
+function drawPend(){
+ const t=pend.reduce((a,x)=>a+x.kcal,0);
+ $('pend').innerHTML=pend.length?`${banner()}<div class="lbl">รายการที่จะเพิ่ม (แก้ตัวเลขได้)</div>`+pend.map((x,i)=>`<div class="pi"><div>${esc(x.name)}<div class="mut">${esc(x.qty||'')}</div></div><input type="number" inputmode="numeric" value="${x.kcal}" aria-label="แคลอรี่" onchange="pend[${i}].kcal=Math.max(0,+this.value||0);drawPend()"><button class="g" aria-label="เอาออก" onclick="pend.splice(${i},1);drawPend()">×</button></div>`).join('')+`<button style="width:100%;margin-top:10px" onclick="commit()">เพิ่ม ${fmt(t)} kcal</button>`:'';
+}
+function commit(){const L=today(),b=Date.now();pend.forEach((x,i)=>L.push({id:b+i,meal:M,...x}));save();closeS();render()}
+
+async function run(text,blob){
+ const msg=$('msg');msg.textContent='Claude กำลังประเมิน...';
+ try{
+  const s=typeof claude!=='undefined'&&await claude.use('sample');if(!s)throw new Error('no');
+  if(blob&&!(await s.limits()).images)throw new Error('img');
+  const pr='คุณเป็นนักกำหนดอาหารที่ประเมินแคลอรี่อาหารไทยและอาหารทั่วไป ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น รูปแบบ {"items":[{"name":"ชื่ออาหารภาษาไทย","qty":"ปริมาณที่ประเมิน","kcal":ตัวเลข,"p":โปรตีนกรัม,"c":คาร์บกรัม,"f":ไขมันกรัม}]} แยกเป็นหนึ่งรายการต่อเมนูหรือจาน ประเมินตามปริมาณที่ระบุหรือที่เห็น ถ้าไม่ระบุให้ใช้ 1 หน่วยบริโภคทั่วไป '+(text?'อาหาร: '+text:'ดูอาหารจากรูปที่แนบ');
+  const r=await s.json(pr,blob?{images:[blob]}:{});
+  const it=(r&&r.items)||[];if(!it.length)throw new Error('empty');
+  it.forEach(x=>addP(String(x.name||'อาหาร'),String(x.qty||''),+x.kcal||0,+x.p||0,+x.c||0,+x.f||0));
+  msg.textContent='ประเมินแล้ว ตรวจและแก้ตัวเลขได้ก่อนเพิ่ม';chk();
+ }catch(e){msg.textContent=e.message==='no'?'ฟีเจอร์ประเมินด้วย AI ใช้ได้เฉพาะในหน้า Claude ตอนนี้เลือกจากเมนูด้านล่างแทนได้':'ประเมินไม่สำเร็จ ลองใหม่อีกครั้ง หรือเลือกจากเมนูด้านล่าง'}
+}
+function ai(){const q=$('q').value.trim();if(!q){$('msg').textContent='พิมพ์ชื่ออาหารก่อน';return}run(q)}
+function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const r=Math.min(1,900/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*r;c.height=i.height*r;c.getContext('2d').drawImage(i,0,0,c.width,c.height);c.toBlob(ok,'image/jpeg',.8)};i.onerror=no;i.src=URL.createObjectURL(f)})}
+async function photo(el){const f=el.files[0];if(!f)return;try{run('',await shrink(f))}catch(e){$('msg').textContent='เปิดรูปไม่ได้ ลองรูปอื่น'}el.value=''}
+const mn=()=>MEALS.find(m=>m[0]===M);
+function addF(i){const f=FOODS[i];addP(f[0],f[1],f[2],f[3],0,0);chk()}
+const sw=x=>SW[x.name]&&x.kcal>SW[x.name][2]?`<button class="g sw" onclick="swap(${x.id})">สลับ −${x.kcal-SW[x.name][2]}</button>`:'';
+function swap(id){const x=today().find(y=>y.id===id),a=SW[x.name];if(!a)return;Object.assign(x,{name:a[0],qty:a[1],kcal:a[2],p:a[3]});save();render()}
+function proj(){const c=calc(S.p),L=today(),t=pend.reduce((a,x)=>a+x.kcal,0),e=L.filter(x=>x.meal===M).reduce((a,x)=>a+x.kcal,0),d=L.reduce((a,x)=>a+x.kcal,0);return{mo:e+t-Math.round(c.t*mn()[2]),dy:d+t-c.t}}
+function banner(){const q=proj();if(q.mo<=0&&q.dy<=0)return'';return`<div class="warn">${q.mo>0?'เกินงบมื้อนี้ ~'+fmt(q.mo)+' kcal':''}${q.mo>0&&q.dy>0?' · ':''}${q.dy>0?'เกินเป้าวันนี้ ~'+fmt(q.dy)+' kcal':''}</div>`}
+function chk(){const q=proj();if(q.mo<=0&&q.dy<=0)return;const i=pend.findIndex(x=>SW[x.name]&&x.kcal>SW[x.name][2]),a=i>=0&&SW[pend[i].name];
+ $('pop').innerHTML=`<div class="ov"><div class="pp" role="alertdialog"><h3>เตือนก่อนเพิ่ม</h3><p>${q.mo>0?mn()[1]+'จะเกินงบ ~'+fmt(q.mo)+' kcal':''}${q.mo>0&&q.dy>0?'<br>':''}${q.dy>0?'วันนี้จะเกินเป้า ~'+fmt(q.dy)+' kcal':''}</p>${a?`<p class="mut">สลับ ${esc(pend[i].name)} เป็น ${esc(a[0])} ประหยัด ~${pend[i].kcal-a[2]} kcal</p><button onclick="sp(${i})">สลับเลย</button>`:''}<button class="g" onclick="$('pop').innerHTML='';openSug(M,1)">ดูเมนูเบากว่า</button><button class="g" onclick="$('pop').innerHTML=''">เพิ่มต่อ</button></div></div>`}
+function sp(i){const a=SW[pend[i].name];pend[i]={name:a[0],qty:a[1],kcal:a[2],p:a[3]};$('pop').innerHTML='';drawPend()}
+function openSug(k,keep){M=k;if(!keep)pend=[];
+ $('sheet').innerHTML=`<div class="ov" onclick="if(event.target===this)closeS()"><div class="sh" role="dialog" aria-label="เมนูแนะนำ"><div class="mh"><h3>เมนูแนะนำ${mn()[1]}</h3><button class="g" onclick="closeS()">ปิด</button></div><div class="mut" id="sinfo"></div><div class="chips" id="stabs"></div><div id="slist"></div><div id="pend"></div></div></div>`;drawSug();drawPend()}
+function drawSug(){
+ const c=calc(S.p),r=mn()[2],e=today().filter(x=>x.meal===M),rem=Math.round(c.t*r)-e.reduce((a,x)=>a+x.kcal,0),pl=Math.round(c.pt*r)-e.reduce((a,x)=>a+(x.p||0),0);
+ $('sinfo').textContent=(rem>0?'งบที่เหลือ '+fmt(rem)+' kcal':'มื้อนี้ใช้งบครบแล้ว แสดงเฉพาะของเบาๆ')+(pl>0?' · โปรตีนยังขาด ~'+fmt(pl)+' กรัม':'');
+ $('stabs').innerHTML=SRCS.map(s=>`<button class="chip${s[0]===SRC?' on':''}" onclick="SRC='${s[0]}';drawSug()">${s[1]}</button>`).join('');
+ const lim=rem>0?rem:150,L=FOODS.map((f,i)=>[f,i]).filter(([f])=>f[4]===SRC&&f[2]<=lim).sort((a,b)=>b[0][3]/b[0][2]-a[0][3]/a[0][2]);
+ $('slist').innerHTML=L.length?L.map(([f,i])=>`<div class="pi"><div>${f[0]}<div class="mut">${f[1]} · ${f[2]} kcal · โปรตีน ${f[3]} ก.</div></div><button onclick="addF(${i})">เพิ่ม</button></div>`).join(''):'<div class="mut">ไม่มีเมนูในหมวดนี้ที่พอดีงบ ลองหมวดอื่น</div>'}
+function wcard(c){
+ const W=S.wl||[],wk=[];
+ if(W.length){const t0=W[0].t;W.forEach(x=>{const i=Math.floor((x.t-t0)/6048e5);(wk[i]=wk[i]||[]).push(x.w)})}
+ const pts=wk.map((a,i)=>a?[i,a.reduce((s,v)=>s+v,0)/a.length]:null).filter(Boolean).slice(-10);
+ let g='<div class="mut">บันทึกน้ำหนักสัปดาห์ละครั้งเพื่อดูกราฟ</div>';
+ if(pts.length>1){const ys=pts.map(p=>p[1]),lo=Math.min(...ys)-.5,hi=Math.max(...ys)+.5,n=pts.length,X=i=>10+i*(280/(n-1)),Y=v=>80-(v-lo)/(hi-lo)*70;
+  g=`<svg viewBox="0 0 300 100" style="width:100%"><polyline points="${pts.map((p,i)=>X(i)+','+Y(p[1])).join(' ')}" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linejoin="round"/>${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p[1])}" r="4" fill="var(--acc)"/><text x="${X(i)}" y="98" font-size="10" text-anchor="middle" fill="var(--mut)">${p[1].toFixed(1)}</text>`).join('')}</svg><div class="mut">ค่าเฉลี่ยรายสัปดาห์ (กก.)</div>`}
+ let a='';
+ if(W.length>1){const f=W[0],l=W[W.length-1],days=(l.t-f.t)/864e5;if(days>=10){const r=(f.w-l.w)/(days/7);a=r<c.real*.5?`ลดได้ ${r.toFixed(2)} กก./สัปดาห์ ช้ากว่าแผน (${c.real.toFixed(2)}) ลองเช็คว่าบันทึกอาหารครบไหม เดินเพิ่ม หรือขยับความเร็วขึ้น 1 ขั้นในตั้งค่า`:r>1?`ลดได้ ${r.toFixed(2)} กก./สัปดาห์ เร็วเกิน 1 กก. ระวังเสียกล้ามเนื้อ ลองกินเพิ่มเล็กน้อยหรือเลือกความเร็วที่ช้าลง`:'ลดตามแผน ทำต่อได้เลย'}}
+ return`<div class="card"><div class="mh"><h3>น้ำหนัก</h3><span class="mut">เป้า ${S.p.gw} กก.</span></div>${g}${a?'<div class="warn" style="background:var(--accb);color:var(--ink)">'+a+'</div>':''}<div class="row"><input id="wi" type="number" inputmode="decimal" placeholder="น้ำหนักวันนี้ (กก.)"><button onclick="logW()">บันทึก</button></div></div>`}
+function logW(){const v=parseFloat($('wi').value);if(!(v>20))return;const W=S.wl||(S.wl=[]),d=dk(),x=W.find(y=>y.d===d);if(x)x.w=v;else W.push({d,t:Date.now(),w:v});S.p.w=v;save();render()}
+function water(c){const m=(S.wt||{})[dk()]||0;
+ return`<div class="card"><div class="mh"><h3>น้ำดื่ม</h3><span class="mut">${fmt(m)} / ${fmt(c.wt)} มล. · ~${Math.ceil(c.wt/250)} แก้ว</span></div><div class="bar"><i style="width:${Math.min(100,m/c.wt*100)}%"></i></div><div class="g2"><button class="add" onclick="addW(250)">+ 1 แก้ว (250 มล.)</button><button class="add" onclick="addW(500)">+ 1 ขวด (500 มล.)</button></div>${m>0?'<button class="g" style="margin-top:8px;padding:6px 12px" onclick="addW(-250)">ลบ 1 แก้ว</button>':''}<div class="mut" style="margin-top:8px">คิดจากน้ำหนักและระดับการเคลื่อนไหวของคุณ นับน้ำเปล่า ชา และกาแฟไม่หวานได้</div></div>`}
+function addW(v){const W=S.wt||(S.wt={}),k=dk();W[k]=Math.max(0,(W[k]||0)+v);save();render()}
+render();
+</script></body></html>
