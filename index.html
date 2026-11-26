@@ -140,14 +140,14 @@ function commit(){const L=today(),b=Date.now();pend.forEach((x,i)=>L.push({id:b+
 async function run(text,blob){
  const msg=$('msg');msg.textContent='Claude กำลังประเมิน...';
  try{
-  const s=await claude.use('sample');if(!s)throw new Error('no');
+  const s=typeof claude!=='undefined'&&await claude.use('sample');if(!s)throw new Error('no');
   if(blob&&!(await s.limits()).images)throw new Error('img');
   const pr='คุณเป็นนักกำหนดอาหารที่ประเมินแคลอรี่อาหารไทยและอาหารทั่วไป ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น รูปแบบ {"items":[{"name":"ชื่ออาหารภาษาไทย","qty":"ปริมาณที่ประเมิน","kcal":ตัวเลข,"p":โปรตีนกรัม,"c":คาร์บกรัม,"f":ไขมันกรัม}]} แยกเป็นหนึ่งรายการต่อเมนูหรือจาน ประเมินตามปริมาณที่ระบุหรือที่เห็น ถ้าไม่ระบุให้ใช้ 1 หน่วยบริโภคทั่วไป '+(text?'อาหาร: '+text:'ดูอาหารจากรูปที่แนบ');
   const r=await s.json(pr,blob?{images:[blob]}:{});
   const it=(r&&r.items)||[];if(!it.length)throw new Error('empty');
   it.forEach(x=>addP(String(x.name||'อาหาร'),String(x.qty||''),+x.kcal||0,+x.p||0,+x.c||0,+x.f||0));
   msg.textContent='ประเมินแล้ว ตรวจและแก้ตัวเลขได้ก่อนเพิ่ม';chk();
- }catch(e){msg.textContent='ประเมินไม่สำเร็จ ลองใหม่อีกครั้ง หรือเลือกจากเมนูด้านล่าง'}
+ }catch(e){msg.textContent=e.message==='no'?'ฟีเจอร์ประเมินด้วย AI ใช้ได้เฉพาะในหน้า Claude ตอนนี้เลือกจากรายการหรือกรอกแคลเองได้':'ประเมินไม่สำเร็จ ลองใหม่อีกครั้ง หรือเลือกจากเมนูด้านล่าง'}
 }
 function ai(){const q=$('q').value.trim();if(!q){$('msg').textContent='พิมพ์ชื่ออาหารก่อน';return}run(q)}
 function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const r=Math.min(1,900/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*r;c.height=i.height*r;c.getContext('2d').drawImage(i,0,0,c.width,c.height);c.toBlob(ok,'image/jpeg',.8)};i.onerror=no;i.src=URL.createObjectURL(f)})}
@@ -204,6 +204,7 @@ function custom(){const n=$('cn').value.trim(),q=$('cq').value.trim(),ks=$('ck')
  if(ks===''||!(k>=0)){run(n+(q?' '+q:''));return}
  const m=S.my||(S.my=[]);if(!m.some(x=>x[0]===n&&x[1]===q))m.push([n,q,Math.round(k),0,'m','m']);save();
  addP(n,q,k,0,0,0);chk();['cn','ck','cq'].forEach(i=>$(i).value='');drawList()}
+FOODS.push(['ข้าวจี่ชุบไข่','1 ไม้',230,7,'r','s']);
 let HN=7,HO=null;
 function hist(){
  const c=calc(S.p),D=[];
