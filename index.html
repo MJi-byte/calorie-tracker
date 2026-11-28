@@ -141,8 +141,8 @@ function openAdd(k){
  <div class="mh"><h3>เพิ่มใน${n}</h3><button class="g" onclick="closeS()">ปิด</button></div>
  <div class="row"><input id="q" placeholder="พิมพ์ชื่ออาหาร เช่น ข้าวมันไก่ 1 จาน" oninput="drawList()"><button onclick="ai()">คำนวณแคล</button></div>
  <label class="ph">ถ่ายรูปหรือเลือกรูปอาหาร<input type="file" accept="image/*" hidden onchange="photo(this)"></label>
- <div id="msg" class="mut" style="margin-top:8px"></div><div id="pend"></div>
- <div class="lbl">เลือกจากรายการ</div><div class="chips" id="cats"></div><div id="list" class="chips"></div><div class="lbl">เพิ่มรายการเอง</div><div class="g2"><input id="cn" placeholder="ชื่ออาหาร/เครื่องดื่ม"><input id="ck" type="number" inputmode="numeric" placeholder="แคล (ว่าง = ให้ประเมิน)"></div><div class="row"><input id="cq" placeholder="ปริมาณ เช่น 1 แก้ว"><button onclick="custom()">เพิ่ม</button></div></div></div>`;
+ ${stkHtml()}<div id="msg" class="mut" style="margin-top:8px"></div><div id="pend"></div>
+ <div class="lbl">เลือกจากรายการ</div><div class="chips" id="cats"></div><div id="list" class="chips"></div><div class="lbl">เพิ่มรายการเอง</div><div class="g2"><input id="cn" placeholder="ชื่ออาหาร/เครื่องดื่ม"><input id="ck" type="number" inputmode="numeric" placeholder="แคล (ว่าง = ให้ประเมิน)"></div><div class="row"><input id="cq" placeholder="ปริมาณ เช่น 1 แก้ว"><input id="cpr" type="number" inputmode="decimal" placeholder="โปรตีน (ก.)" style="width:120px"><button onclick="custom()">เพิ่ม</button></div></div></div>`;
  drawList();
 }
 function closeS(){$('sheet').innerHTML=''}
@@ -219,12 +219,12 @@ let CAT='*';const CATS=[['*','ทั้งหมด'],['d','เครื่อ�
 const DRK=/^(ชา|น้ำ|กาแฟ|นม)/,ALL=()=>[...FOODS,...(S.my||[])].map(x=>x[5]?x:[...x.slice(0,5),DRK.test(x[0])?'d':'f']),catOk=x=>CAT==='*'||x[5]===CAT;
 function drawCats(){$('cats').innerHTML=CATS.map(c=>`<button class="chip${c[0]===CAT?' on':''}" onclick="CAT='${c[0]}';drawList()">${c[1]}</button>`).join('')}
 function delMy(j){(S.my||[]).splice(j,1);save();drawList()}
-function custom(){const n=$('cn').value.trim(),q=$('cq').value.trim(),ks=$('ck').value.trim(),k=parseFloat(ks);
+function custom(){const n=$('cn').value.trim(),q=$('cq').value.trim(),ks=$('ck').value.trim(),k=parseFloat(ks),pr=Math.max(0,parseFloat($('cpr').value)||0);
  if(!n){$('msg').textContent='ใส่ชื่ออาหารหรือเครื่องดื่มก่อน';return}
  document.querySelector('.sh').scrollTo({top:0,behavior:'smooth'});
  if(ks===''||!(k>=0)){run(n+(q?' '+q:''));return}
- const m=S.my||(S.my=[]);if(!m.some(x=>x[0]===n&&x[1]===q))m.push([n,q,Math.round(k),0,'m','m']);save();
- addP(n,q,k,0,0,0);chk();['cn','ck','cq'].forEach(i=>$(i).value='');drawList()}
+ const m=S.my||(S.my=[]);if(!m.some(x=>x[0]===n&&x[1]===q))m.push([n,q,Math.round(k),pr,'m','m']);save();
+ addP(n,q,k,pr,0,0);chk();['cn','ck','cq','cpr'].forEach(i=>$(i).value='');drawList()}
 FOODS.push(['ข้าวจี่ชุบไข่','1 ไม้',230,7,'r','s']);
 let HN=7,HO=null;
 function hist(){
@@ -269,6 +269,13 @@ function addEx(){const e=EX[+$('exs').value],m=parseFloat($('exm').value);if(!(m
 function delEx(id){const k=dk();S.ex[k]=S.ex[k].filter(x=>x.id!==id);save();render()}
 function bmi(){const h=S.p.h/100,b=S.p.w/h/h,g=S.p.gw/h/h,ct=b<18.5?'น้ำหนักน้อย':b<23?'ปกติ':b<25?'น้ำหนักเกิน':b<30?'อ้วนระดับ 1':'อ้วนระดับ 2';
  return`<div class="mut" style="margin:6px 0">BMI <b>${b.toFixed(1)}</b> (${ct} เกณฑ์เอเชีย) · น้ำหนักที่เหมาะสม ${Math.round(18.5*h*h)}-${Math.round(22.9*h*h)} กก.</div>${g<18.5?'<div class="warn">น้ำหนักเป้าหมายต่ำกว่าเกณฑ์ BMI 18.5 ควรปรึกษาแพทย์ก่อน</div>':''}`}
+// สเต็กเนื้อ ต่อ 100 กรัมหลังสุก [ส่วน, kcal, โปรตีน, ไขมัน] ค่าโดยประมาณ
+const STK=[['สันใน',220,28,12],['สันนอก',250,27,16],['ริบอาย',290,25,21],['ทีโบน',260,26,17],['ซีร์ลอยน์',215,29,11],['วากิว (ติดมัน)',350,21,28]];
+rows('h','f','1 จาน',[['สเต็กสันใน 150 ก.',330,42],['สเต็กซีร์ลอยน์ 200 ก.',430,58],['สเต็กสันนอก 200 ก.',500,54],['สเต็กริบอาย 200 ก.',580,50]]);
+function stkHtml(){return`<details class="card" style="margin:10px 0" ontoggle="stk()"><summary style="cursor:pointer;font-weight:600">🥩 สเต็กเนื้อ เลือกส่วนและน้ำหนัก (กรัม)</summary><div class="g2" style="margin-top:10px"><select id="sc" onchange="stk()" aria-label="ส่วนของเนื้อ">${STK.map((s,i)=>`<option value="${i}">${s[0]}</option>`).join('')}</select><select id="sr" onchange="stk()" aria-label="ชั่งตอน"><option value="1">ชั่งหลังสุก</option><option value=".75">ชั่งตอนดิบ</option></select></div><select id="ss" onchange="stk()" style="margin-top:8px" aria-label="ซอส"><option value="0">ไม่ใส่เนย/ซอส</option><option value="90">เนยหรือซอสเล็กน้อย (+90 kcal)</option></select><div class="chips" id="sg" style="margin-top:8px"></div><div class="row"><input id="sw" type="number" inputmode="numeric" value="200" oninput="stk()" aria-label="กรัม"><button onclick="addStk()">เพิ่ม</button></div><div class="mut" id="so"></div></details>`}
+function stkVals(){const c=STK[+$('sc').value||0],g=(+$('sw').value||0)*(+$('sr').value||1),s=+$('ss').value||0;return{c,g,k:Math.round(c[1]*g/100+s),p:Math.round(c[2]*g/100),f:Math.round(c[3]*g/100+(s?10:0))}}
+function stk(){const v=stkVals();$('so').textContent='≈ '+fmt(v.k)+' kcal · โปรตีน '+v.p+' กรัม (น้ำหนักหลังสุก '+Math.round(v.g)+' ก.) ค่าโดยประมาณ';$('sg').innerHTML=[100,150,200,250,300,400].map(x=>`<button class="chip${x==+$('sw').value?' on':''}" onclick="$('sw').value=${x};stk()">${x} ก.</button>`).join('')}
+function addStk(){const v=stkVals();if(!(v.g>0))return;addP('สเต็ก'+v.c[0],Math.round(+$('sw').value)+' กรัม'+($('sr').value==='1'?'':' (ดิบ)'),v.k,v.p,0,v.f);pend[pend.length-1].k='f';chk();document.querySelector('.sh').scrollTo({top:0,behavior:'smooth'})}
 applyTh();
 render();
 </script></body></html>
